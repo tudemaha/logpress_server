@@ -10,6 +10,13 @@ import (
 func PingHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var response dto.Response
+		if r.Method != "GET" {
+			response.DefaultNotAllowed()
+			w.WriteHeader(response.Code)
+			json.NewEncoder(w).Encode(response)
+			return
+		}
+
 		response.DefaultOK()
 		response.Data = map[string]string{
 			"ping": "pong",

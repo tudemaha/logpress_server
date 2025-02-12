@@ -37,6 +37,11 @@ func (r *Response) DefaultNotFound() {
 	r.Message = "Record not found"
 }
 
+func (r *Response) DefaultNotAllowed() {
+	r.Code = 405
+	r.Message = "Method not allowed"
+}
+
 func (r *Response) DefaultConflict() {
 	r.Code = 409
 	r.Message = "New data already exists"
