@@ -9,6 +9,7 @@ import (
 
 func PingHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
 		var response dto.Response
 		if r.Method != "GET" {
 			response.DefaultNotAllowed()
@@ -22,7 +23,6 @@ func PingHandler() http.HandlerFunc {
 			"ping": "pong",
 		}
 
-		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(response)
 	}
 }

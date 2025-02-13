@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/tudemaha/logpress_server/global/dto"
 	"github.com/tudemaha/logpress_server/internal/decompress/service"
@@ -13,8 +14,17 @@ import (
 
 func DecompressHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// startTime := time.Now()
+		w.Header().Set("Content-Type", "application/json")
 		var response dto.Response
+
+		if r.Method != "POST" {
+			response.DefaultNotAllowed()
+			w.WriteHeader(response.Code)
+			json.NewEncoder(w).Encode(response)
+			return
+		}
+
+		startTime := time.Now()
 
 		r.Body = http.MaxBytesReader(w, r.Body, 6<<30)
 
@@ -72,8 +82,9 @@ func DecompressHandler() http.HandlerFunc {
 			return
 		}
 
-		// transferTime := time.Now()
+		transferTime := time.Now()
 
+		var decompressTime time.Time
 		if filename[len(filename)-1] == "gz" {
 			err := service.DecompressGZIP(filename[0])
 			if err != nil {
@@ -83,9 +94,27 @@ func DecompressHandler() http.HandlerFunc {
 				json.NewEncoder(w).Encode(response)
 				return
 			}
+			decompressTime = time.Now()
 		}
 
-		// decompressTime := time.Now()
+		err = service.MergeDump(filename[0])
+		if err != nil {
+			response.DefaultInternalError()
+			response.Error = append(response.Error, err.Error())
+			w.WriteHeader(response.Code)
+			json.NewEncoder(w).Encode(response)
+			return
+		}
 
+		mergeTime := time.Now()
+
+		response.DefaultOK()
+		response.Data = map[string]string{
+			"start_time":      startTime.String(),
+			"transfer_time":   transferTime.String(),
+			"decompress_time": decompressTime.String(),
+			"merge_time":      mergeTime.String(),
+		}
+		json.NewEncoder(w).Encode(response)
 	}
 }
