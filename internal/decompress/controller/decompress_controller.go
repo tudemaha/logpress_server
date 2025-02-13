@@ -11,6 +11,7 @@ import (
 
 func DecompressHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// startTime := time.Now()
 		var response dto.Response
 
 		r.Body = http.MaxBytesReader(w, r.Body, 6<<30)
@@ -34,7 +35,7 @@ func DecompressHandler() http.HandlerFunc {
 		}
 		defer file.Close()
 
-		dst, err := os.Create("./dump/" + header.Filename)
+		dst, err := os.Create("./dump/compressed/" + header.Filename)
 		if err != nil {
 			response.DefaultInternalError()
 			response.Error = append(response.Error, err.Error())
@@ -52,6 +53,7 @@ func DecompressHandler() http.HandlerFunc {
 			json.NewEncoder(w).Encode(response)
 			return
 		}
-		dst.Close()
+
+		// transferTime := time.Now()
 	}
 }
