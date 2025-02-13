@@ -5,8 +5,10 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/tudemaha/logpress_server/global/dto"
+	"github.com/tudemaha/logpress_server/internal/decompress/service"
 )
 
 func DecompressHandler() http.HandlerFunc {
@@ -35,7 +37,23 @@ func DecompressHandler() http.HandlerFunc {
 		}
 		defer file.Close()
 
-		dst, err := os.Create("./dump/compressed/" + header.Filename)
+		filename := strings.Split(header.Filename, ".")
+		if filename[len(filename)-1] != "gz" && filename[len(filename)-1] != "sql" {
+			response.DefaultBadRequest()
+			response.Error = append(response.Error, "uploaded file extension must .gz or .sql")
+			w.WriteHeader(response.Code)
+			json.NewEncoder(w).Encode(response)
+			return
+		}
+
+		var fullpath string
+		if filename[len(filename)-1] == "gz" {
+			fullpath = "./dump/compressed/" + header.Filename
+		} else {
+			fullpath = "./dump/uncompressed/" + header.Filename
+		}
+
+		dst, err := os.Create(fullpath)
 		if err != nil {
 			response.DefaultInternalError()
 			response.Error = append(response.Error, err.Error())
@@ -55,5 +73,19 @@ func DecompressHandler() http.HandlerFunc {
 		}
 
 		// transferTime := time.Now()
+
+		if filename[len(filename)-1] == "gz" {
+			err := service.DecompressGZIP(filename[0])
+			if err != nil {
+				response.DefaultInternalError()
+				response.Error = append(response.Error, err.Error())
+				w.WriteHeader(response.Code)
+				json.NewEncoder(w).Encode(response)
+				return
+			}
+		}
+
+		// decompressTime := time.Now()
+
 	}
 }
