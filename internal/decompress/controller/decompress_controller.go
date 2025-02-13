@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/tudemaha/logpress_server/global/dto"
+	decompressDto "github.com/tudemaha/logpress_server/internal/decompress/dto"
 	"github.com/tudemaha/logpress_server/internal/decompress/service"
 )
 
@@ -81,7 +82,6 @@ func DecompressHandler() http.HandlerFunc {
 			json.NewEncoder(w).Encode(response)
 			return
 		}
-
 		transferTime := time.Now()
 
 		var decompressTime time.Time
@@ -105,15 +105,36 @@ func DecompressHandler() http.HandlerFunc {
 			json.NewEncoder(w).Encode(response)
 			return
 		}
-
 		mergeTime := time.Now()
 
+		var decompressDuration int64
+		var mergeDuration int64
+
+		transferDuration := transferTime.Sub(startTime).Microseconds()
+		if filename[len(filename)-1] == "gz" {
+			decompressDuration = decompressTime.Sub(transferTime).Microseconds()
+			mergeDuration = mergeTime.Sub(decompressTime).Microseconds()
+		} else {
+			mergeDuration = mergeTime.Sub(transferTime).Microseconds()
+		}
+
+		timestampSummary := decompressDto.TimestampSummary{
+			StartTime:      startTime.String(),
+			TransferTime:   transferTime.String(),
+			DecompressTime: decompressTime.String(),
+			MergeTime:      mergeTime.String(),
+		}
+		durationSummary := decompressDto.DurationSummary{
+			TransferDuration:   transferDuration,
+			DecompressDuration: decompressDuration,
+			MergeDuration:      mergeDuration,
+			TotalDuration:      transferDuration + decompressDuration + mergeDuration,
+		}
+
 		response.DefaultOK()
-		response.Data = map[string]string{
-			"start_time":      startTime.String(),
-			"transfer_time":   transferTime.String(),
-			"decompress_time": decompressTime.String(),
-			"merge_time":      mergeTime.String(),
+		response.Data = map[string]interface{}{
+			"timestamp_summary": timestampSummary,
+			"duration_summary":  durationSummary,
 		}
 		json.NewEncoder(w).Encode(response)
 	}
