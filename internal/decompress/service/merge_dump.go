@@ -11,6 +11,7 @@ func MergeDump(filename string) error {
 	name := os.Getenv("DB_NAME")
 	username := os.Getenv("DB_USER")
 	password := os.Getenv("DB_PASS")
+	host := os.Getenv("DB_HOST")
 
 	output, _ := exec.Command("pwd").Output()
 	pwd := strings.TrimSpace(string(output))
@@ -18,6 +19,7 @@ func MergeDump(filename string) error {
 	cmdArgs := []string{
 		"-u", username,
 		"-p" + password,
+		"-h", host,
 		name,
 		"-e", fmt.Sprintf("source %s/dump/uncompressed/%s.sql", pwd, filename),
 	}
