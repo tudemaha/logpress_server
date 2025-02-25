@@ -7,7 +7,7 @@ import (
 )
 
 func StartServer() {
-	log.Println("INFO StartServer: server started at :8080")
 	port := os.Getenv("PORT")
+	log.Println("INFO StartServer: server started at :", port)
 	http.ListenAndServe(":"+port, nil)
 }
