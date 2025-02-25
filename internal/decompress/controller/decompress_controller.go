@@ -97,7 +97,7 @@ func DecompressHandler() http.HandlerFunc {
 			decompressTime = time.Now()
 		}
 
-		err = service.MergeDump(filename[0])
+		err = service.MergeDumpHadoop(filename[0])
 		if err != nil {
 			response.DefaultInternalError()
 			response.Error = append(response.Error, err.Error())
