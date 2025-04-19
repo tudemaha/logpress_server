@@ -18,6 +18,11 @@ export default function () {
   };
 
   const res = http.post(`${__ENV.SERVER_ENDPOINT}/upload`, data);
+
+  if (res.status !== 200) {
+    console.log(res.body);
+  }
+
   check(res, {
     "Res status is 200": (r) => res.status === 200,
     "Res Content-Type header": (r) =>
