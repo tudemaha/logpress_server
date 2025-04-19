@@ -1,0 +1,6 @@
+{
+  "dependencies": {},
+  "devDependencies": {
+    "@types/k6": "^1.0.2"
+  }
+}
