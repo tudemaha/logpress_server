@@ -49,16 +49,16 @@ func DecompressHandler() http.HandlerFunc {
 		defer file.Close()
 
 		filename := strings.Split(header.Filename, ".")
-		if filename[len(filename)-1] != "gz" && filename[len(filename)-1] != "sql" && filename[len(filename)-1] != "zip" {
+		if filename[len(filename)-1] != "gz" && filename[len(filename)-1] != "sql" && filename[len(filename)-1] != "bz2" {
 			response.DefaultBadRequest()
-			response.Error = append(response.Error, "uploaded file extension must .gz, .sql, or .zip.")
+			response.Error = append(response.Error, "uploaded file extension must .gz, .sql, or .bz2.")
 			w.WriteHeader(response.Code)
 			json.NewEncoder(w).Encode(response)
 			return
 		}
 
 		var fullpath string
-		if filename[len(filename)-1] == "gz" || filename[len(filename)-1] == "zip" {
+		if filename[len(filename)-1] == "gz" || filename[len(filename)-1] == "bz2" {
 			fullpath = "./dump/compressed/" + header.Filename
 		} else {
 			fullpath = "./dump/uncompressed/" + header.Filename
@@ -97,8 +97,8 @@ func DecompressHandler() http.HandlerFunc {
 			decompressTime = time.Now()
 		}
 
-		if filename[len(filename)-1] == "zip" {
-			err := service.DecompressZIP(filename[0])
+		if filename[len(filename)-1] == "bz2" {
+			err := service.DecompressBZIP2(filename[0])
 			if err != nil {
 				response.DefaultInternalError()
 				response.Error = append(response.Error, err.Error())
