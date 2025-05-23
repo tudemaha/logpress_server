@@ -123,7 +123,7 @@ func DecompressHandler() http.HandlerFunc {
 		var mergeDuration int64
 
 		transferDuration := transferTime.Sub(startTime).Microseconds()
-		if filename[len(filename)-1] == "gz" {
+		if filename[len(filename)-1] == "gz" || filename[len(filename)-1] == "bz2" {
 			decompressDuration = decompressTime.Sub(transferTime).Microseconds()
 			mergeDuration = mergeTime.Sub(decompressTime).Microseconds()
 		} else {
